@@ -18,8 +18,10 @@ class RouteDecoder {
   factory RouteDecoder.fromRoute(String location) {
     var uri = Uri.parse(location);
     final args = PageSettings(uri);
-    final decoder =
-        (Get.rootController.rootDelegate).matchRoute(location, arguments: args);
+    final decoder = (Get.rootController.rootDelegate).matchRoute(
+      location,
+      arguments: args,
+    );
     decoder.route = decoder.route?.copyWith(
       completer: null,
       arguments: args,
@@ -86,9 +88,7 @@ class RouteDecoder {
 }
 
 class ParseRouteTree {
-  ParseRouteTree({
-    required this.routes,
-  });
+  ParseRouteTree({required this.routes});
 
   /// 路由列表, 即 app_pages.dart 中的 routes
   final List<GetPage> routes;
@@ -108,9 +108,7 @@ class ParseRouteTree {
     final split = uri.path.split('/').where((element) => element.isNotEmpty);
     // 存储从根路径开始逐步累积的所有可能的路径
     var curPath = '/';
-    final cumulativePaths = <String>[
-      '/',
-    ];
+    final cumulativePaths = <String>['/'];
     for (var item in split) {
       if (curPath.endsWith('/')) {
         curPath += item;
@@ -214,18 +212,18 @@ class ParseRouteTree {
       // Add Parent middlewares to children
       final parentMiddlewares = [
         if (page.middlewares.isNotEmpty) ...page.middlewares,
-        if (route.middlewares.isNotEmpty) ...route.middlewares
+        if (route.middlewares.isNotEmpty) ...route.middlewares,
       ];
 
       final parentBindings = [
         if (page.binding != null) page.binding!,
         if (page.bindings.isNotEmpty) ...page.bindings,
-        if (route.bindings.isNotEmpty) ...route.bindings
+        if (route.bindings.isNotEmpty) ...route.bindings,
       ];
 
       final parentBinds = [
         if (page.binds.isNotEmpty) ...page.binds,
-        if (route.binds.isNotEmpty) ...route.binds
+        if (route.binds.isNotEmpty) ...route.binds,
       ];
 
       result.add(
@@ -240,23 +238,22 @@ class ParseRouteTree {
 
       final children = _flattenPage(page);
       for (var child in children) {
-        result.add(_addChild(
-          child,
-          parentPath,
-          [
-            ...parentMiddlewares,
-            if (child.middlewares.isNotEmpty) ...child.middlewares,
-          ],
-          [
-            ...parentBindings,
-            if (child.binding != null) child.binding!,
-            if (child.bindings.isNotEmpty) ...child.bindings,
-          ],
-          [
-            ...parentBinds,
-            if (child.binds.isNotEmpty) ...child.binds,
-          ],
-        ));
+        result.add(
+          _addChild(
+            child,
+            parentPath,
+            [
+              ...parentMiddlewares,
+              if (child.middlewares.isNotEmpty) ...child.middlewares,
+            ],
+            [
+              ...parentBindings,
+              if (child.binding != null) child.binding!,
+              if (child.bindings.isNotEmpty) ...child.bindings,
+            ],
+            [...parentBinds, if (child.binds.isNotEmpty) ...child.binds],
+          ),
+        );
       }
     }
     return result;
@@ -313,15 +310,5 @@ class ParseRouteTree {
       params[routePath.keys[i]!] = param;
     }
     return params;
-  }
-}
-
-extension FirstWhereOrNullExt<T> on List<T> {
-  /// The first element satisfying [test], or `null` if there are none.
-  T? firstWhereOrNull(bool Function(T element) test) {
-    for (var element in this) {
-      if (test(element)) return element;
-    }
-    return null;
   }
 }
